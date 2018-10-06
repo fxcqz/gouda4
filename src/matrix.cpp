@@ -93,12 +93,4 @@ json Matrix::POST(const std::string& endpoint,
                   const param_t& params,
                   const std::string& version)
 {
-  const auto response = cpr::Post(
-    cpr::Url{buildUrl(endpoint, params, version)},
-    cpr::Body{data.dump()},
-    cpr::Header{{"Content-Type", "application/json; charset=utf-8"}},
-    cpr::VerifySsl{false}
-  );
-
-  return json::parse(response.text);
 }
