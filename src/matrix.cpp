@@ -2,7 +2,6 @@
 #include <sstream>
 #include <streambuf>
 
-#include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/StreamCopier.h>
 #include <Poco/Exception.h>
@@ -100,22 +99,8 @@ std::string Matrix::buildUrl(const std::string& endpoint,
   return url.str();
 }
 
-json Matrix::POST(const std::string& endpoint,
-                  const json& data,
-                  const param_t& params,
-                  const std::string& version)
+json Matrix::getResponse()
 {
-  const std::string url = buildUrl(endpoint, params, version);
-
-  Poco::Net::HTTPRequest request{Poco::Net::HTTPRequest::HTTP_POST, url};
-  request.setContentType("application/json");
-
-  const std::string body = data.dump();
-  request.setContentLength(body.length());
-
-  std::ostream& os = m_conn->sendRequest(request);
-  os << body;
-
   Poco::Net::HTTPResponse response;
   try {
     std::istream& is = m_conn->receiveResponse(response);
@@ -127,4 +112,34 @@ json Matrix::POST(const std::string& endpoint,
   catch (Poco::Exception& ex) {
     return EMPTY_JSON;
   }
+}
+
+json Matrix::PUT_OR_POST(const std::string& method,
+                         const std::string& endpoint,
+                         const json& data,
+                         const param_t& params,
+                         const std::string& version)
+{
+  const std::string url = buildUrl(endpoint, params, version);
+
+  Poco::Net::HTTPRequest request{method, url};
+  request.setContentType("application/json");
+
+  const std::string body = data.dump();
+  request.setContentLength(body.length());
+
+  std::ostream& os = m_conn->sendRequest(request);
+  os << body;
+
+  return getResponse();
+}
+
+json Matrix::GET(const std::string& endpoint,
+                 const param_t& params,
+                 const std::string& version)
+{
+  const std::string url = buildUrl(endpoint, params, version);
+  Poco::Net::HTTPRequest request{Poco::Net::HTTPRequest::HTTP_GET, url};
+  m_conn->sendRequest(request);
+  return getResponse();
 }

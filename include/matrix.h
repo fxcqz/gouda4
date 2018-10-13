@@ -6,6 +6,7 @@
 #include <string>
 
 #include <nlohmann/json.hpp>
+#include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPSClientSession.h>
 
 using json = nlohmann::json;
@@ -13,6 +14,8 @@ using param_t = std::map<std::string, std::string>;
 
 const json EMPTY_JSON = "{}"_json;
 const param_t NO_PARAMS;
+const std::string HTTP_POST = Poco::Net::HTTPRequest::HTTP_POST;
+const std::string HTTP_PUT  = Poco::Net::HTTPRequest::HTTP_PUT;
 
 std::string makeParams(const param_t& params);
 
@@ -31,10 +34,15 @@ private:
   std::string buildUrl(const std::string& endpoint,
                        const param_t& params,
                        const std::string& version) const;
-  json POST(const std::string& endpoint,
-            const json& data,
-            const param_t& params = NO_PARAMS,
-            const std::string& version = "unstable");
+  json getResponse();
+  json PUT_OR_POST(const std::string& method,
+                   const std::string& endpoint,
+                   const json& data,
+                   const param_t& params = NO_PARAMS,
+                   const std::string& version = "unstable");
+  json GET(const std::string& endpoint,
+           const param_t& params = NO_PARAMS,
+           const std::string& version = "unstable");
 public:
   explicit Matrix(const std::string& filename);
 
