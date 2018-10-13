@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <streambuf>
 
 #include <Poco/Net/HTTPResponse.h>
@@ -57,7 +58,10 @@ std::string Matrix::getAddress() const
 
 std::string Matrix::getRoom() const
 {
-  return m_config["room"];
+  std::string room = m_config["room"];
+  room.replace(room.find('#'), 1, "%23");
+  room.replace(room.find(':'), 1, "%3A");
+  return room;
 }
 
 // Utility methods
@@ -173,7 +177,40 @@ void Matrix::login()
     {"password", getPassword()}
   };
   const json response = POST("login", data);
-  std::cout << response.dump(4) << '\n';
+  if (response.empty())
+  {
+    throw std::runtime_error("Could not login to Matrix");
+  }
+
   m_accessToken = response["access_token"];
   m_userID = response["user_id"];
+}
+
+void Matrix::join()
+{
+  const json response = POST("join/" + getRoom(), EMPTY_JSON);
+  if (response.empty())
+  {
+    throw std::runtime_error("Could not join the room");
+  }
+
+  m_roomID = response["room_id"];
+}
+
+void Matrix::setMessageFilter()
+{
+  std::ostringstream data_string;
+  data_string << R"({
+    "account_data": {"types": ["m.room.meessage"]},
+    "room": {"rooms": [")" << m_roomID << "\"]}}";
+  const json data = json::parse(data_string.str());
+
+  std::ostringstream url;
+  url << "user/" << m_userID << "/filter";
+  const json response = POST(url.str(), data);
+
+  if (!response.empty())
+  {
+    m_filterID = response["filter_id"];
+  }
 }

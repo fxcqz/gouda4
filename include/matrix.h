@@ -58,6 +58,9 @@ public:
   std::string getRoom() const;
 
   void login();
+  void join();
+  void setMessageFilter();
+  json sync();
 };
 
 #endif
