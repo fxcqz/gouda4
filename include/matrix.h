@@ -2,9 +2,11 @@
 #define MATRIX_H
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include <nlohmann/json.hpp>
+#include <Poco/Net/HTTPSClientSession.h>
 
 using json = nlohmann::json;
 using param_t = std::map<std::string, std::string>;
@@ -17,6 +19,7 @@ std::string makeParams(const param_t& params);
 class Matrix {
 private:
   json m_config;
+  std::unique_ptr<Poco::Net::HTTPSClientSession> m_conn;
   std::string m_userID;
   std::string m_roomID;
   std::string m_accessToken;

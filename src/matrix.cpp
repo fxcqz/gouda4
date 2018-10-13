@@ -1,6 +1,12 @@
 #include <fstream>
 #include <sstream>
 #include <streambuf>
+#include <iostream>
+
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
+#include <Poco/StreamCopier.h>
+#include <Poco/Exception.h>
 
 #include "matrix.h"
 
@@ -22,9 +28,16 @@ json Matrix::readConfig(const std::string& filename)
 }
 
 Matrix::Matrix(const std::string& filename)
-{
-  m_config = readConfig(filename);
-}
+  : m_config(readConfig(filename))
+  , m_conn(std::make_unique<Poco::Net::HTTPSClientSession>(
+    getAddress(), 443,
+    new Poco::Net::Context(
+      Poco::Net::Context::TLSV1_2_CLIENT_USE,
+      "",
+      Poco::Net::Context::VERIFY_NONE,
+      9, true
+  )))
+{}
 
 // Getters for matrix config (from json), see file for details
 
@@ -74,7 +87,7 @@ std::string Matrix::buildUrl(const std::string& endpoint,
 {
   char concat = '?';
   std::ostringstream url;
-  url << getAddress() << "/_matrix/client/" << version << "/" << endpoint;
+  url << "/_matrix/client/" << version << "/" << endpoint;
   std::string paramString = makeParams(params);
   if (paramString.length())
   {
@@ -93,4 +106,27 @@ json Matrix::POST(const std::string& endpoint,
                   const param_t& params,
                   const std::string& version)
 {
+  const std::string url = buildUrl(endpoint, params, version);
+
+  Poco::Net::HTTPRequest request{Poco::Net::HTTPRequest::HTTP_POST, url};
+  request.setContentType("application/json");
+
+  const std::string body = data.dump();
+  request.setContentLength(body.length());
+
+  std::ostream& os = m_conn->sendRequest(request);
+  os << body;
+  std::cout << body << '\n';
+
+  Poco::Net::HTTPResponse response;
+  try {
+    std::istream& is = m_conn->receiveResponse(response);
+    std::stringstream ss;
+    Poco::StreamCopier::copyStream(is, ss);
+
+    return json::parse(ss.str());
+  }
+  catch (Poco::Exception& ex) {
+    return EMPTY_JSON;
+  }
 }
