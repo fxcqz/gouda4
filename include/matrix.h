@@ -14,8 +14,6 @@ using param_t = std::map<std::string, std::string>;
 
 const json EMPTY_JSON = "{}"_json;
 const param_t NO_PARAMS;
-const std::string HTTP_POST = Poco::Net::HTTPRequest::HTTP_POST;
-const std::string HTTP_PUT  = Poco::Net::HTTPRequest::HTTP_PUT;
 
 std::string makeParams(const param_t& params);
 
@@ -35,11 +33,19 @@ private:
                        const param_t& params,
                        const std::string& version) const;
   json getResponse();
-  json PUT_OR_POST(const std::string& method,
-                   const std::string& endpoint,
-                   const json& data,
-                   const param_t& params = NO_PARAMS,
-                   const std::string& version = "unstable");
+  json putOrPost(const std::string& method,
+                 const std::string& endpoint,
+                 const json& data,
+                 const param_t& params = NO_PARAMS,
+                 const std::string& version = "unstable");
+  json POST(const std::string& endpoint,
+            const json& data,
+            const param_t& params = NO_PARAMS,
+            const std::string& version = "unstable");
+  json PUT(const std::string& endpoint,
+           const json& data,
+           const param_t& params = NO_PARAMS,
+           const std::string& version = "unstable");
   json GET(const std::string& endpoint,
            const param_t& params = NO_PARAMS,
            const std::string& version = "unstable");
@@ -50,6 +56,8 @@ public:
   std::string getPassword() const;
   std::string getAddress() const;
   std::string getRoom() const;
+
+  void login();
 };
 
 #endif

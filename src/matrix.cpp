@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <streambuf>
 
@@ -114,11 +115,11 @@ json Matrix::getResponse()
   }
 }
 
-json Matrix::PUT_OR_POST(const std::string& method,
-                         const std::string& endpoint,
-                         const json& data,
-                         const param_t& params,
-                         const std::string& version)
+json Matrix::putOrPost(const std::string& method,
+                       const std::string& endpoint,
+                       const json& data,
+                       const param_t& params,
+                       const std::string& version)
 {
   const std::string url = buildUrl(endpoint, params, version);
 
@@ -134,6 +135,26 @@ json Matrix::PUT_OR_POST(const std::string& method,
   return getResponse();
 }
 
+json Matrix::POST(const std::string& endpoint,
+                  const json& data,
+                  const param_t& params,
+                  const std::string& version)
+{
+  return putOrPost(
+    Poco::Net::HTTPRequest::HTTP_POST, endpoint, data, params, version
+  );
+}
+
+json Matrix::PUT(const std::string& endpoint,
+                 const json& data,
+                 const param_t& params,
+                 const std::string& version)
+{
+  return putOrPost(
+    Poco::Net::HTTPRequest::HTTP_PUT, endpoint, data, params, version
+  );
+}
+
 json Matrix::GET(const std::string& endpoint,
                  const param_t& params,
                  const std::string& version)
@@ -142,4 +163,17 @@ json Matrix::GET(const std::string& endpoint,
   Poco::Net::HTTPRequest request{Poco::Net::HTTPRequest::HTTP_GET, url};
   m_conn->sendRequest(request);
   return getResponse();
+}
+
+void Matrix::login()
+{
+  const json data = {
+    {"type", "m.login.password"},
+    {"user", getUsername()},
+    {"password", getPassword()}
+  };
+  const json response = POST("login", data);
+  std::cout << response.dump(4) << '\n';
+  m_accessToken = response["access_token"];
+  m_userID = response["user_id"];
 }
