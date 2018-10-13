@@ -1,7 +1,6 @@
 #include <fstream>
 #include <sstream>
 #include <streambuf>
-#include <iostream>
 
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
@@ -116,7 +115,6 @@ json Matrix::POST(const std::string& endpoint,
 
   std::ostream& os = m_conn->sendRequest(request);
   os << body;
-  std::cout << body << '\n';
 
   Poco::Net::HTTPResponse response;
   try {
