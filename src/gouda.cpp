@@ -8,4 +8,5 @@ int main (int argc, char *argv[])
   m.login();
   m.join();
   m.setMessageFilter();
+  m.sync();
 }

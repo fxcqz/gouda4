@@ -214,3 +214,21 @@ void Matrix::setMessageFilter()
     m_filterID = response["filter_id"];
   }
 }
+
+json Matrix::sync()
+{
+  param_t params{{{"filter", m_filterID}}};
+  if (m_nextBatch.length() > 0)
+  {
+    params.insert({"since", m_nextBatch});
+  }
+
+  const json response = GET("sync", params);
+
+  if (!response.empty())
+  {
+    m_nextBatch = response["next_batch"];
+  }
+
+  return response;
+}
