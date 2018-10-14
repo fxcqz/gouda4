@@ -233,7 +233,7 @@ json Matrix::sync()
   return response;
 }
 
-std::vector<Message> Matrix::extractMessages(const json& data)
+std::vector<Message> Matrix::extractMessages(const json& data) const
 {
   std::vector<Message> result;
   try {
@@ -265,4 +265,16 @@ void Matrix::sendMessage(const std::string& message, const std::string& msgType)
   url << "rooms/" << m_roomID << "/send/m.room.message/" << m_txID;
   PUT(url.str(), data);
   m_txID += 1;
+}
+
+void Matrix::markRead(const Message& message)
+{
+  const json data = {
+    {"m.fully_read", message.m_eventID},
+    {"m.read", message.m_eventID}
+  };
+  std::ostringstream url;
+  url << "rooms/" << m_roomID << "/read_markers";
+
+  POST(url.str(), data);
 }

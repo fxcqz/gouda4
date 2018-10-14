@@ -14,6 +14,12 @@ int main (int argc, char *argv[])
   {
     json data{matrix.sync()};
     std::vector<Message> messages{matrix.extractMessages(data)};
+
+    if (messages.size() > 0)
+    {
+      matrix.markRead(messages.back());
+    }
+
     for (const auto& message : messages)
     {
       if (message.m_body == "hello bot")

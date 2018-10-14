@@ -64,9 +64,10 @@ public:
   void join();
   void setMessageFilter();
   json sync();
-  std::vector<Message> extractMessages(const json& data);
+  std::vector<Message> extractMessages(const json& data) const;
   void sendMessage(const std::string& message,
                    const std::string& msgType = "m.text");
+  void markRead(const Message& message);
 };
 
 class Message {
