@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 #include <Poco/Net/HTTPRequest.h>
@@ -16,6 +17,8 @@ const json EMPTY_JSON = "{}"_json;
 const param_t NO_PARAMS;
 
 std::string makeParams(const param_t& params);
+
+class Message;
 
 class Matrix {
 private:
@@ -61,6 +64,21 @@ public:
   void join();
   void setMessageFilter();
   json sync();
+  std::vector<Message> extractMessages(const json& data);
+  void sendMessage(const std::string& message,
+                   const std::string& msgType = "m.text");
+};
+
+class Message {
+public:
+  std::string m_body;
+  std::string m_sender;
+  std::string m_eventID;
+
+  Message(const std::string& body,
+          const std::string& sender,
+          const std::string& eventID)
+  : m_body(body), m_sender(sender), m_eventID(eventID) {};
 };
 
 #endif

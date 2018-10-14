@@ -232,3 +232,30 @@ json Matrix::sync()
 
   return response;
 }
+
+std::vector<Message> Matrix::extractMessages(const json& data)
+{
+  std::vector<Message> result;
+  try {
+    const json roomData = data[0]["rooms"]["join"];
+    if (roomData.find(m_roomID) != roomData.end())
+    {
+      const json events = roomData[m_roomID]["timeline"]["events"];
+      for (const auto& event : events)
+      {
+        result.push_back({
+          event["content"]["body"], event["sender"], event["event_id"]
+        });
+      }
+    }
+  }
+  catch (...) {
+    return {};
+  }
+  return result;
+}
+
+void Matrix::sendMessage(const std::string& message, const std::string& msgType)
+{
+
+}
