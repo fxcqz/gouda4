@@ -16,7 +16,10 @@ int main (int argc, char *argv[])
     std::vector<Message> messages{matrix.extractMessages(data)};
     for (const auto& message : messages)
     {
-      std::cout << message.m_body << '\n';
+      if (message.m_body == "hello bot")
+      {
+        matrix.sendMessage("YO WHAT UP CUZ");
+      }
     }
   }
 }

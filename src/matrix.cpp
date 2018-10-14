@@ -257,5 +257,12 @@ std::vector<Message> Matrix::extractMessages(const json& data)
 
 void Matrix::sendMessage(const std::string& message, const std::string& msgType)
 {
-
+  const json data = {
+    {"body", message},
+    {"msgtype", msgType}
+  };
+  std::ostringstream url;
+  url << "rooms/" << m_roomID << "/send/m.room.message/" << m_txID;
+  PUT(url.str(), data);
+  m_txID += 1;
 }
